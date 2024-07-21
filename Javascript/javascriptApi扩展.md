@@ -3,10 +3,17 @@
 ### 参考文献
 
 ### 目录
-  - 判断数据类型
-  - Object.defineProperty 和 Proxy
-  - 各种数组方法（创建指定长度、降纬等方法）
-  - 各种对象方法
+- [](#)
+  - [参考文献](#参考文献)
+  - [目录](#目录)
+  - [判断数据类型](#判断数据类型)
+    - [typeof() 适合判断基本数据类型](#typeof-适合判断基本数据类型)
+    - [instanceof](#instanceof)
+    - [constructor](#constructor)
+    - [Object.prototype.toString.call()](#objectprototypetostringcall)
+  - [Object.defineProperty和Proxy](#objectdefineproperty和proxy)
+  - [各种数组方法（创建指定长度、降纬等方法）](#各种数组方法创建指定长度降纬等方法)
+  - [各种对象方法](#各种对象方法)
 
 ### 判断数据类型
   - typeof() 常用
@@ -111,7 +118,7 @@ console.log(toString.apply(undefined));    // [object Undefined]
 console.log(toString.apply(null));         // [object Null]
 ```
 
-### Object.defineProperty 和 Proxy
+### Object.defineProperty和Proxy
   > Object.defineProperty
 ```JS
 observer(data) {

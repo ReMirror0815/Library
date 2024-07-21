@@ -3,37 +3,41 @@
 ## 参考文献 http://caibaojian.com/es6/promise.html
 
 ## 目录
-- let & var & const
-  - let
-  - const
-  - let、var 和 const 比较
-  - 深度理解let、var的作用域
-  - 扩展
-- 解构赋值
-- 扩展运算符
-- 数组扩展、对象扩展
-- 箭头函数
-- ES6 同步和异步
-- Promise 详细请看 es6/promise
-- async 和 await
-- class、constructor、this
-  - constructor
-  - this
-  - class的继承
-  - 类的prototype属性和__proto__属性
-  - super关键字
-  - Class的静态方法
-- Generator
-  - Generator.prototype.return()
-- proxy vue3源码采用的就是这个特性
-  - get()
-  - set()
-  - apply()
-  - has()
-  - 扩展 使用 Proxy 实现观察者模式
+- [](#)
+- [参考文献 http://caibaojian.com/es6/promise.html](#参考文献-httpcaibaojiancomes6promisehtml)
+- [目录](#目录)
+- [内容](#内容)
+  - [let\&var\&const](#letvarconst)
+    - [let](#let)
+    - [const](#const)
+    - [let、var 和 const 比较](#letvar-和-const-比较)
+    - [深度理解let、var的作用域](#深度理解letvar的作用域)
+    - [扩展](#扩展)
+  - [解构赋值](#解构赋值)
+  - [展开运算符](#展开运算符)
+  - [数组扩展、对象扩展](#数组扩展对象扩展)
+  - [箭头函数](#箭头函数)
+  - [ES6同步和异步](#es6同步和异步)
+  - [Promise详细请看es6/promise](#promise详细请看es6promise)
+  - [async和await](#async和await)
+  - [class、constructor、this](#classconstructorthis)
+    - [constructor](#constructor)
+    - [this](#this)
+    - [class的继承](#class的继承)
+    - [类的prototype属性和\_\_proto\_\_属性](#类的prototype属性和__proto__属性)
+    - [super关键字](#super关键字)
+    - [Class的静态方法](#class的静态方法)
+  - [Generator](#generator)
+    - [Generator.prototype.return()](#generatorprototypereturn)
+  - [proxy\&vue3源码采用的就是这个特性](#proxyvue3源码采用的就是这个特性)
+    - [get()](#get)
+    - [set()](#set)
+    - [apply()](#apply)
+    - [has()](#has)
+    - [扩展 使用 Proxy 实现观察者模式](#扩展-使用-proxy-实现观察者模式)
 
 ## 内容
-### let & var & const
+### let&var&const
 #### let
 - 暂时性死区：只要块级作用域内存在 let 命令，它所声明的变量就绑定这个区域，不再受外部的影响。在代码块内，使用 let 声明变量之前，该变量都是不可用的，所以叫 “暂时性死区”。
 - 不能重复声明
@@ -192,7 +196,7 @@ setTimeout(() => console.log('s2: ', timer.s2), 3100);
 // s2: 0
 ```
   
-### ES6 同步和异步
+### ES6同步和异步
   - 同步和异步是一种消息通知机制
   - 同步阻塞
     - A 调用 B，B 处理获得结果，才返回给 A。
@@ -202,14 +206,14 @@ setTimeout(() => console.log('s2: ', timer.s2), 3100);
     - A 调用 B，无需等待 B 的结果，B 通过状态，通知等来通知 A 或回调函数来处理。
     - 做一件事，不用等待事情的结果，然后就去忙别的了，有了结果，再通过状态来告诉我，或者通过回调函数来处理。
   
-### Promise 详细请看 es6/promise
+### Promise详细请看es6/promise
   - 自己封装核心API queueMicrotask（微任务）
   - Promise 的三种状态：
     - pedding
     - resolved
     - reject
   
-### async 和 await
+### async和await
   - async 和 await 是一起出现的，基于 Promise。
 
 ### class、constructor、this
@@ -508,7 +512,7 @@ g.next()        // { value: undefined, done: true }
 ```
 
 
-### proxy vue3源码采用的就是这个特性
+### proxy&vue3源码采用的就是这个特性
   - Proxy 可以理解成，在目标对象之前架设一层“拦截”，外界对该对象的访问，都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。Proxy 这个词的原意是代理，用在这里表示由它来“代理”某些操作，可以译为“代理器”。
   - new Proxy()表示生成一个Proxy实例，target参数表示所要拦截的目标对象，handler参数也是一个对象，用来定制拦截行为。
 ``` Javascript
