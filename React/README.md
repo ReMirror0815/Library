@@ -58,9 +58,9 @@
 - 卸载阶段：componentWillUnmount
 - React 逐渐废弃的生命周期方法：componentWillMount、componentWillReceiveProps、componentWillUpdate
 - 版本更新之前
- ![图片](/Users/futurngazer/Desktop/2024面试题汇总/React/images/image1.png)
+ ![图片](https://github.com/ReMirror0815/Library/React/images/image1.png)
 - 版本更新之后
- ![图片](/Users/futurngazer/Desktop/2024面试题汇总/React/images/image2.png)
+ ![图片](https://github.com/ReMirror0815/Library/React/images/image2.png)
 
  #### 挂载阶段
  - constructor：构造函数，最先被执行，通常在构造函数中初始化 state 对象或者给自定义方法绑定 this
