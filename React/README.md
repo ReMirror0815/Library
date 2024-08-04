@@ -119,13 +119,34 @@ React 的接口请求是放在 componentDidMount 里面比较合适，旧版本�
 
 
 ### React虚拟dom
-
+  > 虚拟dom.md
 
 ### Reactdiff算法
-
+  > diff算法.md
 
 
 ### React合成事件
+  > 合成事件.md
+  > React合成事件是指将原生事件合成一个React事件，之所以要封装自己的一套事件机制，目的是为了实现全浏览器的一致性，抹平不同浏览器之间的差异性。比如原生onclick事件对应React中的onClick合成事件。
+
+  ![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image9.png)
+
+  如上图所示，所谓事件流包括三个阶段：事件捕获、目标阶段和事件冒泡。事件捕获是从外到里，对应图中的红色箭头标注部分window -> document -> html ... -> target，目标阶段是事件真正发生并处理的阶段，事件冒泡是从里到外，对应图中的target -> ... -> html -> document -> window。
+
+  之前多版本并存的主要问题在于React 事件系统默认的委托机制，出于性能考虑，React 只会给document挂上事件监听，DOM 事件触发后冒泡到document，React 找到对应的组件，造一个 React 事件出来，并按组件树模拟一遍事件冒泡（此时原生 DOM 事件早已冒出document了）
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image10.png)
+
+因此，不同版本的 React 组件嵌套使用时，e.stopPropagation()无法正常工作（两个不同版本的事件系统是独立的，都到document已经太晚了）
+
+而React17解决了这个问题，React 17 不再往document上挂事件委托，而是挂到 DOM 容器上
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image11.png)
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image10.png)
+
+
+另一方面，将事件系统从document缩回来，也让 React 更容易与其它技术栈共存（至少在事件机制上少了一些差异）
 
 
 
@@ -325,7 +346,27 @@ jotai 深受 recoil 启发，设计理念基本相同。但有以下不同：
 
 
 ### 服务端渲染
+  > [博客参考](https://blog.csdn.net/halations/article/details/108368240?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522172274106016800182720210%2522%252C%2522scm%2522%253A%252220140713.130102334.pc%255Fblog.%2522%257D&request_id=172274106016800182720210&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~blog~first_rank_ecpm_v1~rank_v31_ecpm-5-108368240-null-null.nonecase&utm_term=%E6%9C%8D%E5%8A%A1&spm=1018.2226.3001.4450)
 
+
+总结来说：
+  - 采用React15的render在服务端渲染的时候如果服务器端与客户端节点不一致，服务器端的节点将完全被废弃掉重新渲染并采用客户端的节点。
+  - 采用React16的render在服务端渲染的时候如果服务器端与客户端节点不一致，仅仅是尝试修改不匹配的HTML子树，而不是修改整个HTML树，同时官方给予警告：render() 对服务端渲染容器进行 hydrate 操作的方式已经被废弃，并且会在 React 17 被移除。作为替代，请使用 hydrate()。
+  - 这种变化对用户不会有影响，调用render()/hydrate()时React 16不会修改SSR生成的不匹配HTML。这一项性能优化意味着你需要额外确保修复在开发模式下的所有警告。
+  - 采用React16的hydrate时，hydrate的策略与render的策略不一样，其并不会对整个dom树做dom patch，其只会对text Content内容做patch
+
+服务端和客户端之间的差异
+  - 服务端和客户端的运行环境不一样，所支持的语法也不一样。
+  - 服务端无法支持图片、css等资源文件。
+  - 服务端缺乏BOM和DOM环境，服务端下无法访问window,navigator等对象。
+  - 服务端中所有用户公用一个global环境，客户端每个用户都有自己的global环境。
+
+为什么要服务器端渲染
+  - 相比于浏览器端渲染，服务器端渲染的好处是：
+    1. 可以缩短“第一有意义渲染时间”
+       1. 如果完全依赖于浏览器端渲染，那么服务器端返回的 HTML 就是一个空荡荡的框架和对 JavaScript 的应用，然后浏览器下载 JavaScript，再根据 JavaScript 中的 AJAX 调用获取服务器端数据，再渲染出 DOM 来填充网页内容，总共需要三个 HTTP 或 HTTPS 请求。
+       2. 如果使用服务器端渲染，第一个 HTTP/HTTPS 请求返回的 HTML 里就包含可以渲染的内容了，这样用户第一时间就会感觉到“有东西画出来了”，这样的感知性能更好。
+    2. 更好的搜索引擎优化（seo优化）
 
 
 ### 基础面试题
