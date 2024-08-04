@@ -16,14 +16,22 @@
     - [卸载阶段](#卸载阶段)
   - [setState](#setstate)
     - [调用setState之后发生了什么](#调用setstate之后发生了什么)
+    - [setState 是同步还是异步](#setstate-是同步还是异步)
   - [React虚拟dom](#react虚拟dom)
   - [Reactdiff算法](#reactdiff算法)
   - [React合成事件](#react合成事件)
-  - [React中this问题](#react中this问题)
   - [受控组建/非受控组件](#受控组建非受控组件)
   - [组件通讯](#组件通讯)
+    - [父组件向子组件通讯](#父组件向子组件通讯)
+    - [子组件向父组件通讯](#子组件向父组件通讯)
+    - [复杂点的通讯](#复杂点的通讯)
   - [Redux](#redux)
-  - [Mobx](#mobx)
+  - [Mobx observable观察者设计模式](#mobx-observable观察者设计模式)
+  - [其他主流状态管理](#其他主流状态管理)
+    - [Dva](#dva)
+    - [mobx](#mobx)
+    - [Zustand](#zustand)
+    - [Jotai（推荐使用/了解）](#jotai推荐使用了解)
   - [纯函数/函数组件/高阶组件](#纯函数函数组件高阶组件)
   - [服务端渲染](#服务端渲染)
   - [基础面试题](#基础面试题)
@@ -93,6 +101,19 @@ React 的接口请求是放在 componentDidMount 里面比较合适，旧版本�
 ### setState
 > setState 是 React 中用于修改状态，更新视图的方法。
 #### 调用setState之后发生了什么
+  - 在代码中调用 setState 之后，React 会将传入的参数对象与组件当前的状态合并，触发所谓的调和过程（Reconciliation）。
+  - 经过调和过程，React 会以相对高效的方式根据新的状态构建 React 元素树并且着手重新渲染整个 UI 界面。
+  - 在 React 得到元素树之后，React 会自动计算新树和老树之间的节点差异，然后根据差异对界面进行最小化重新渲染。
+  - 在差异计算算法（Diff）中，React 能够相对精确地知道哪些位置发生了改变以及英国如何改变，保证了按需更新，而不是全部重新渲染。
+  总结：
+    1. 合并参数对象，触发调和过程
+    2. 计算新树和老树差异（Diff）
+    3. 根据差异进行最小化重新渲染
+
+#### setState 是同步还是异步
+  - setState 在合成事件和钩子函数中是异步的，在原生事件和 setTimeout 是同步的。
+  - setState 的异步，并不是说内部由异步代码实现，它本身执行的过程和代码是同步的，只是合成事件和钩子函数的调用顺序在更新之前，导致在合成事件和钩子函数中没法立马拿到更新后的值，从而形成了所谓的异步。
+  - setState 可以通过第二个参数 setState(partialState, callback)，在回调方法中拿到更新后的结果。
 
 
 ### React虚拟dom
@@ -105,19 +126,173 @@ React 的接口请求是放在 componentDidMount 里面比较合适，旧版本�
 ### React合成事件
 
 
-### React中this问题
-
 
 ### 受控组建/非受控组件
+  - 具体来说这是一种 React 非受控组件，其状态是在 input 的 React 内部控制，不受调用者控制。
+  - 所以受控组件就是可以被 React 状态控制的组件。双向数据绑定就是受控组件，你可以为 form 中某个输入框添加 value 属性，然后控制它的一个改变。而非受控组件就是没有添加 value 属性的组件，你并不能对它的固定值进行操作。
 
 
 ### 组件通讯
 
+#### 父组件向子组件通讯
+  父组件向子组件通讯：父组件向子组件传 props 方式，向子组件进行通讯。
+
+#### 子组件向父组件通讯
+  子组件向父组件通讯：父组件在 props 中传递方法，然后子组件调用这个方法，将自身需要传递的信息，传递到父组件的作用域中。
+
+#### 复杂点的通讯
+    复杂点的通讯：借助 React 的 Context，或者 Redux 进行数据通讯。
+
 
 ### Redux
+  > 事例
+```
+- 某个页面文件夹
+   - View.jsx     当前页面主入口
+   - Child.jsx    子组件
+   - Brother.jsx  兄弟组件
+   - action.js    动作
+   - types.js     类型
+   - saga.js      调用接口
+   - reducers.js  处理数据
+```
+
+正常的一个工作目录如上所示，我们工作中是怎么个使用方式呢？
+
+ - 首先，在 View.jsx 中通过 React-Redux 连接 React 和 Redux
+
+ - 然后，假设现在 Child.jsx 需要调用接口（异步处理），那么会：
+    1. 在 action.js 中定义这个方法，会传递什么参数。
+    2. 其中 types.js 是辅助 action.js 的一个内容，为了防止方法体的重复，我们会在 types.js 中定义大写的 action 名字。
+    3. 这时候就可以在 View.jsx 中通过 dispatch 触发方法，例如 dispatch(getPage(page, perPage))。
+    4. 这时候，在 reducers.js 中和 sage.js 中都能监听到这个方法，但是我们是在 sage.js 中调用接口并处理数据。
+    5. 处理完毕之后，再将 sage.js 中的传递给 reducers.js 中，让它去处理数据。
+- 接着，如果 Brother.jsx 只是单纯地想处理数据并在 Child.jsx 中使用，那么我们处理方式是跟上面一样的，只是直接在 reducers.js 中处理，而不需要再在 sage.js 中调用接口而已。
+- 最后，我们再看看 redux 和 react-reduxt 的工作流程加深印象：
+
+redux 和 react-redux 的工作流程:
+
+redux:
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image3.png)
+
+react-reduxt:
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image4.png)
 
 
-### Mobx
+总结：redux就是一个状态管理工具，他有一个store，你可以理解是一个容器，通过**createstore**来创建**store**，在**store**下面定义**state**，state的改变直接影响到view的改变，但是在view曾，用户是没办法直接接触到state的，所有需要一个**action**，通过**actioncreate**来创建一个action，创建aciton的唯一方法就是store.dispatch，这个store.dispatch接受一个type和新的state，创建完action之后，通过**Reducer**来修改state，Store 收到 Action 以后，必须给出一个新的 State，这样 View 才会发生变化。这种 State 的计算过程就叫做 **Reducer**。Reducer 它接受 Action 和当前 State 作为参数，返回一个新的 State。等state更新之后，store通知view，state发生了改变，view层重新获取state
+
+### Mobx observable观察者设计模式
+MobX 的一些核心原则包括：
+
+- 可能有多个 store 来存储应用程序的状态
+- 整个应用程序的状态存储在单个对象树中
+- 任何一段代码中的动作都可以改变应用程序的状态
+- 当状态改变时，状态的所有派生都会自动和原子地更新
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image5.png)
+
+优点
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image6.png)
+
+工作流程
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image7.png)
+
+> 「首先从左往右看，事件触发了 Actions，Actions 作为唯一修改 State 的方式，修改了 State，State 的修改更新了计算值 Computed，计算值的改变引起了 Reactions 的改变，导致了 UI 的改变(re-render)，Reactions 可以经过事件调用 Actions。」
+
+几个概念
+  - Observable state(可观察的状态)
+  - Computed values(计算值)
+  - Reactions(反应)
+  - Actions(动作)
+
+
+### 其他主流状态管理
+> React 的外部状态管理库一直以来是 React 生态中非常内卷的一个领域。目前比较常见的状态管理库有 Redux（包括基于 Redux 的 Dva、Icestore）、Mobx、Zustand、Recoil、Jotai、Valtio、Hox 等
+
+Class 时代中 Redux 和 Mobx 都是非常优秀的状态库。随着 Hooks 时代的到来，状态管理的心智模型也逐步发生着演变(react 18 不太好兼容mobx)
+
+Redux，设计理念是状态 「自上而下」流动。它「倾向于在组件树的顶端吸走所有的状态」。状态被维护在组件树的高处，下面的组件通过选择器拉取他们需要的状态。一种「自下而上」的观点对构建具有组合模式的应用具有很好的指导作用
+
+通过 hook，我们可以从具有巨大全局存储的「单体状态管理」转变为向自下而上的 「微状态管理」，通过hook消费更小的状态片。
+
+所以因为这个hook的到来，redux下载量逐渐减少。
+
+#### Dva
+> dva 首先是一个基于 redux和 redux-saga的数据流方案，然后为了简化开发体验，dva 还额外内置了 react-router和 fetch，所以也可以理解为一个轻量级的应用框架。
+Dva 的特点：
+  - 易学易用，仅有 6 个 api，对 redux 用户尤其友好，配合 umi 使用后更是降低为 0 API
+  - elm 概念，通过 reducers, effects 和 subscriptions 组织 model
+  - 插件机制，比如 dva-loading可以自动处理 loading 状态，不用一遍遍地写 showLoading 和 hideLoading
+  - 支持 HMR，基于 babel-plugin-dva-hmr实现 components、routes 和 models 的 HMR
+
+#### mobx
+> React 和 MobX 是一对强力组合。React 通过提供机制把应用状态转换为可渲染组件树并对其进行渲染。而MobX提供机制来存储和更新应用状态供 React 使用。
+
+> 对于应用开发中的常见问题，React 和 MobX 都提供了最优和独特的解决方案。React 提供了优化UI渲染的机制， 这种机制就是通过使用虚拟DOM来减少昂贵的DOM变化的数量。MobX 提供了优化应用状态与 React 组件同步的机制，这种机制就是使用响应式虚拟依赖状态图表，它只有在真正需要的时候才更新并且永远保持是最新的。
+
+Mobx的心智模型和react很像，它区分了应用程序的三个概念：
+
+- State(状态)
+- Actions(动作)
+- Derivations(派生)
+
+首先创建可观察的状态（Observable State），通过Action更新State，然后自动更新所有的派生（Derivations）。派生包括Computed value（类似useMemo或useSelector）、副作用函数(类似useEffect)和UI（render）。
+
+![图片](https://github.com/ReMirror0815/Library/blob/master/React/images/image8.png)
+
+
+使用反react的数据流模式，注定会有成本：
+
+1. Mobx的响应式脱离了react自身的生命周期，就不得不显式声明其派生的作用时机和范围。比如副作用触发需要在useEffect里再跑一个autorun/reaction，要给DOM render包一层useObserver/Observer，都加大了开发成本。
+2. Mobx会在组件挂载时收集依赖，和state建立联系，这个方式在即将到来的react 18的并发模式（Concurrent Mode）中，可能无法平滑地迁移。为此，react专门开发了create-subscription方法用于在组件中订阅外部源，但是实际的应用效果还未可知。
+
+
+#### Zustand
+zustand 是一个轻量级状态管理库，和 redux 一样都是基于不可变状态模型和单向数据流的，状态对象 state 不可被修改，只能被替换。渲染优化要手动通过 selectors 进行。
+
+- Zustand vs Redux
+  - zustand 和 redux 是非常像的，都基于不可变状态模型，都基于单向数据流。
+  - redux 需要应用被 Context Provider 包裹，zustand 则不需要。
+  - 二者更新数据的方式不同，redux 基于 reducers，更新状态的 reducers 是严格的方法，这就使得状态更加可预测。zustand 不使用 reducers 而是通过更灵活的方法来更新状态。
+
+- zustand 的特点：
+  1. 轻量级；
+  2. 中心化，单一 store；
+  3. 不可变状态模型；
+  4. 不固执。很少限制，非常开放。
+
+
+
+#### Jotai（推荐使用/了解）
+jotai 是一个小型全局状态管理库，它模仿了 useState、useReducer。jotai 有个叫做 atom 的概念，用于表示小的状态片段。和 zustand 不同的是，他是一个组件级别的状态管理库。和 zustand 相同的是同样都基于不可变状态模型。
+
+
+jotai 是 Context 和订阅机制的结合，是面向 React 的一种全局状态管理库。如果你的需求是一个没有额外重复渲染的 Context，那 jotai 是个不错的选择。
+
+
+- jotai 有两个特点：
+  1. 语法简单
+  2. jotai 的状态不是全局状态
+
+atom 可以在 React 组件的生命周期里创建和销毁。这通过多个 Context 是无法实现的，因为使用 Context 增加一个新的 state 意味着增加一个新的 Provider 组件，如果新增一个组件，它所有的子组件都会被重新挂载，会失去所有状态。
+
+- 衍生 atom
+  1. atom 可以像积木一样被组合，生成新的 atom，从而实现复杂逻辑。
+  2. jotai 通过 atom 之间的依赖来实现自动渲染优化。
+  3. 推荐场景：组件为中心的应用。
+
+- Recoil vs Jotai
+jotai 深受 recoil 启发，设计理念基本相同。但有以下不同：
+- 最大的不同是是否需要键字符串，开发 jotai 的一大动力就是要省略键字符串。因为键属性必须是唯一的，键命名是一项艰巨的任务；
+- jotai 不需要使用 Provider 包裹组件，这对开发者来说可以大幅降低开发成本和心理负担。
+
+- Zustand vs Jotai
+  1. Zustand 是单一 store，Jotai 由原子 atom 组合而成；
+  2. Zustand 的 store 存储在 React 外部，Jotai 的 store 存储在 React 内部。
+
+
 
 
 ### 纯函数/函数组件/高阶组件
